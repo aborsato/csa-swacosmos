@@ -9,7 +9,7 @@ module.exports = async function (context, req) {
     }
 
     // Grab the id from the URL (stored in bindingData)
-    const id = context.bindingData.id;
+    const id = `EXPORT_${context.bindingData.id}`;
 
     context.res.body = { setting: id, value: process.env[id] };
 };
