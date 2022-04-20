@@ -35,5 +35,5 @@ jobs:
           subscriptionId: ${{ secrets.AZURE_SUBSCRIPTION }}
           resourceGroupName: ${{ env.RESOURCE_GROUP }}
           template: ./iac/main.bicep
-          parameters: databaseName=test
+          parameters: databaseName=test repositoryToken=${{ secrets.REPOSITORY_PAT }} repositoryUrl=https://github.com/aborsato/csa-swacosmos
           failOnStdErr: false
