@@ -10,7 +10,7 @@ param cosmosLocation string = 'westus3'
 param repositoryToken string
 param repositoryUrl string
 param branch string = 'main'
-param appLocation string = '.'
+param appLocation string = '/public'
 param apiLocation string = 'api'
 
 @description('Specifies the MongoDB server version to use.')
