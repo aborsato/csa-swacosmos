@@ -12,6 +12,10 @@ param repositoryUrl string
 param branch string = 'main'
 param appLocation string = '/public'
 param apiLocation string = 'api'
+@secure()
+param azureClientId string
+@secure()
+param azureClientSecret string
 
 @description('Specifies the MongoDB server version to use.')
 @allowed([
@@ -89,6 +93,8 @@ resource staticSite 'Microsoft.Web/staticSites@2021-03-01' = {
     name: 'appsettings'
     properties: {
       'CONNECTION_STRING': first(cosmosAccount.listConnectionStrings().connectionStrings).connectionString
+      'AZURE_CLIENT_ID': azureClientId
+      'AZURE_CLIENT_SECRET': azureClientSecret
     }
   }
 }
