@@ -1,37 +1,39 @@
 name: IaC
 
-env:
-  AZURE_WEBAPP_NAME: your-app-name  # set this to the name of your Azure Web App
-
 on:
-#   push:
-#     branches:
-#       - main
   workflow_dispatch:
+
+env:
+  RESOURCE_GROUP: csa-swacosmos
+  LOCATION: eastus2
 
 jobs:
   build:
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v2
 
-      - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v1
-
-      - name: Log in to GitHub container registry
-        uses: docker/login-action@v1.10.0
+      # Log into Azure
+      - uses: azure/login@v1
         with:
-          registry: ghcr.io
-          username: ${{ github.actor }}
-          password: ${{ github.token }}
+          creds: ${{ secrets.AZURE_CREDENTIALS }}
 
-      - name: Lowercase the repo name and username
-        run: echo "REPO=${GITHUB_REPOSITORY,,}" >>${GITHUB_ENV}
-
-      - name: Build and push container image to registry
-        uses: docker/build-push-action@v2
+      # Create Resource Group
+      - name: resource group
+        uses: azure/CLI@v1
         with:
-          push: true
-          tags: ghcr.io/${{ env.REPO }}:${{ github.sha }}
-          file: ./Dockerfile
+          azcliversion: 2.35.0
+          inlineScript: |
+            az group create -n ${{ env.RESOURCE_GROUP }} -l ${{ env.LOCATION }}
+
+      # Deploy Bicep file
+      - name: deploy
+        uses: azure/arm-deploy@v1
+        with:
+          scope: resourcegroup
+          subscriptionId: ${{ secrets.AZURE_SUBSCRIPTION }}
+          resourceGroupName: ${{ env.RESOURCE_GROUP }}
+          template: ./iac/main.bicep
+          parameters: databaseName=test
+          failOnStdErr: false
