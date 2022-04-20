@@ -1,0 +1,64 @@
+{
+    "routes": [
+        {
+            "route": "/api/*",
+            "methods": [
+                "GET",
+                "PUT",
+                "POST",
+                "PATCH",
+                "DELETE"
+            ],
+            "allowedRoles": [
+                "authenticated"
+            ]
+        },
+        {
+            "route": "/login",
+            "rewrite": "/.auth/login/b2c"
+        },
+        {
+            "route": "/logout",
+            "redirect": "/.auth/logout"
+        }
+    ],
+    "navigationFallback": {
+        "rewrite": "index.html",
+        "exclude": [
+            "/images/*.{png,jpg,gif}",
+            "/css/*"
+        ]
+    },
+    "responseOverrides": {
+        "400": {
+            "rewrite": "/invalid-invitation-error.html"
+        },
+        "401": {
+            "redirect": "/login",
+            "statusCode": 302
+        },
+        "403": {
+            "rewrite": "/custom-forbidden-page.html"
+        },
+        "404": {
+            "rewrite": "/404.html"
+        }
+    },
+    "globalHeaders": {
+        "content-security-policy": "default-src https: 'unsafe-eval' 'unsafe-inline'; object-src 'none'"
+    },
+    "mimeTypes": {
+        ".json": "text/json"
+    },
+    "auth": {
+        "identityProviders": {
+            "azureActiveDirectory": {
+                "registration": {
+                    "openIdIssuer": "https://login.microsoftonline.com/e3cf78a5-62c0-4348-b3a8-06bde645dcd2/v2.0",
+                    "clientIdSettingName": "AZURE_CLIENT_ID",
+                    "clientSecretSettingName": "AZURE_CLIENT_SECRET"
+                }
+            }
+        }
+    }
+}
