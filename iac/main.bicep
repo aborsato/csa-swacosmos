@@ -2,9 +2,16 @@
 @description('Cosmos DB account name')
 param namePrefix string = toLower(uniqueString(resourceGroup().id))
 
-@description('Location for the Cosmos DB account.')
+@description('Location is taken from Resource Group.')
 param location string = resourceGroup().location
 param cosmosLocation string = 'westus3'
+
+@secure()
+param repositoryToken string
+param repositoryUrl string
+param branch string = 'main'
+param appLocation string = '.'
+param apiLocation string = 'api'
 
 @description('Specifies the MongoDB server version to use.')
 @allowed([
@@ -65,6 +72,13 @@ resource staticSite 'Microsoft.Web/staticSites@2021-03-01' = {
   name: staticSiteName
   location: location
   properties: {
+    repositoryUrl: repositoryUrl
+    branch: branch
+    repositoryToken: repositoryToken
+    buildProperties: {
+      appLocation: appLocation
+      apiLocation: apiLocation
+    }
   }
   sku: {
     tier: 'Standard'
