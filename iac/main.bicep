@@ -74,7 +74,7 @@ resource staticSite 'Microsoft.Web/staticSites@2021-03-01' = {
   resource staticSiteSettings 'config@2021-03-01' = {
     name: 'appsettings'
     properties: {
-      'COSMOSDB_CONNECTION_STRING': first(cosmosAccount.listConnectionStrings().connectionStrings).connectionString
+      'CONNECTION_STRING': first(cosmosAccount.listConnectionStrings().connectionStrings).connectionString
     }
   }
 }
