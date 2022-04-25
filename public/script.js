@@ -21,7 +21,7 @@ async function pageLoad() {
     } else {
         // User is not logged in
         // Update user display to allow for login
-        userDisplay.innerHTML = '<a href="/.auth/login/github">Please login to see your list of tasks</a>';
+        userDisplay.innerHTML = '<a href="/.auth/login/aad">Please login to see your list of tasks</a>';
     }
 }
 
