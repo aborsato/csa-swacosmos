@@ -3,7 +3,7 @@
     "contentVersion": "1.0.0.0",
     "parameters": {
         "databaseName": {
-            "value": "test"
+            "value": "a9okvtest001"
         },
         "repositoryUrl": { 
             "value": "https://github.com/aborsato/csa-swacosmos"

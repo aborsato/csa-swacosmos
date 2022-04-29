@@ -1,21 +1,19 @@
+// Parameters
+// -------------------------------------------------------------------------------
 
+// General parameters
 @description('Cosmos DB account name')
 param namePrefix string = toLower(uniqueString(resourceGroup().id))
 
 @description('Location is taken from Resource Group.')
 param location string = resourceGroup().location
-param cosmosLocation string = 'westus3'
 
-@secure()
-param repositoryToken string
-param repositoryUrl string
-param branch string = 'main'
-param appLocation string = '/public'
-param apiLocation string = 'api'
-@secure()
-param azureClientId string
-@secure()
-param azureClientSecret string
+@description('The resource name of the main KeyVault.')
+param keyVaultName string
+
+// CosmosDB parameters
+@description('The main CosmosDB location.')
+param cosmosLocation string = 'westus3'
 
 @description('Specifies the MongoDB server version to use.')
 @allowed([
@@ -28,6 +26,27 @@ param serverVersion string = '4.0'
 @description('The name for the Mongo DB database')
 param databaseName string = 'main'
 
+// Static Web App parameters
+@secure()
+@description('The Personal Access Token created in GitHub.')
+param repositoryToken string
+
+@description('The GitHub repositoru URL.')
+param repositoryUrl string
+
+@description('The deployment Git branch.')
+param branch string = 'main'
+
+@description('App location.')
+param appLocation string = '/public'
+
+@description('API location.')
+param apiLocation string = 'api'
+
+
+// Variables
+// -------------------------------------------------------------------------------
+
 var accountName = '${namePrefix}-cosmosdb'
 var staticSiteName = '${namePrefix}-swa'
 var locations = [
@@ -37,6 +56,10 @@ var locations = [
     isZoneRedundant: false
   }
 ]
+
+
+// Resources
+// -------------------------------------------------------------------------------
 
 resource cosmosAccount 'Microsoft.DocumentDB/databaseAccounts@2021-10-15' = {
   name: accountName
@@ -72,29 +95,23 @@ resource cosmosAccountDatabase 'Microsoft.DocumentDB/databaseAccounts/mongodbDat
   }
 }
 
-resource staticSite 'Microsoft.Web/staticSites@2021-03-01' = {
-  name: staticSiteName
-  location: location
-  properties: {
-    repositoryUrl: repositoryUrl
-    branch: branch
-    repositoryToken: repositoryToken
-    buildProperties: {
-      appLocation: appLocation
-      apiLocation: apiLocation
-    }
-  }
-  sku: {
-    tier: 'Standard'
-    name: 'Standard'
-  }
+resource mainKeyVault 'Microsoft.KeyVault/vaults@2019-09-01' existing = {
+  scope: resourceGroup() // the KeyVault is in the same Resource Group
+  name: keyVaultName
+}
 
-  resource staticSiteSettings 'config@2021-03-01' = {
-    name: 'appsettings'
-    properties: {
-      'CONNECTION_STRING': first(cosmosAccount.listConnectionStrings().connectionStrings).connectionString
-      'AZURE_CLIENT_ID': azureClientId
-      'AZURE_CLIENT_SECRET': azureClientSecret
-    }
+module swa 'swa.bicep' = {
+  name: 'swa'
+  params: {
+    location: location
+    staticSiteName: staticSiteName
+    repositoryToken: repositoryToken
+    repositoryUrl: repositoryUrl
+    apiLocation: apiLocation
+    appLocation: appLocation
+    branch: branch
+    azureClientId: mainKeyVault.getSecret('azureClientId')
+    azureClientSecret: mainKeyVault.getSecret('azureClientSecret')
+    cosmosConnectionString: first(cosmosAccount.listConnectionStrings().connectionStrings).connectionString
   }
 }
